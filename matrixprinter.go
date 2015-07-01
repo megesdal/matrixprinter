@@ -1,11 +1,11 @@
-package matrixprinter 
+package matrixprinter
 
 import (
 	"fmt"
 	"io"
 )
 
-type MatrixPrinter struct {
+type Table struct {
 	buf [][]string
 
 	ncols     int
@@ -18,8 +18,8 @@ type MatrixPrinter struct {
 	value string
 }
 
-func New() *MatrixPrinter {
-	return &MatrixPrinter{
+func NewTable() *Table {
+	return &Table{
 		buf:       make([][]string, 0),
 		ncols:     0,
 		colwidths: make([]int, 0),
@@ -30,70 +30,70 @@ func New() *MatrixPrinter {
 }
 
 // AppendInt adds an int to the next column
-func (out *MatrixPrinter) AppendInt(i int) *MatrixPrinter {
-	return out.Append(fmt.Sprintf("%d", i))
+func (t *Table) AppendInt(i int) *Table {
+	return t.Append(fmt.Sprintf("%d", i))
 }
 
 // Append adds a string to the next column
-func (out *MatrixPrinter) Append(s string) *MatrixPrinter {
+func (t *Table) Append(s string) *Table {
 
 	swidth := len(s)
-	if out.col == len(out.colwidths) {
-		out.colwidths = append(out.colwidths, swidth)
-	} else if out.colwidths[out.col] < swidth {
-		out.colwidths[out.col] = swidth
+	if t.col == len(t.colwidths) {
+		t.colwidths = append(t.colwidths, swidth)
+	} else if t.colwidths[t.col] < swidth {
+		t.colwidths[t.col] = swidth
 	}
 
-	if out.col == len(out.colaligns) {
-		out.colaligns = append(out.colaligns, 1)
+	if t.col == len(t.colaligns) {
+		t.colaligns = append(t.colaligns, 1)
 	}
 
-	if out.col == len(out.line) {
-		out.line = append(out.line, s)
+	if t.col == len(t.line) {
+		t.line = append(t.line, s)
 	} else {
-		out.line[out.col] = s
+		t.line[t.col] = s
 	}
 
-	out.col++
-	return out
+	t.col++
+	return t
 }
 
 // ColLeft makes the given column left-aligned
-func (out *MatrixPrinter) ColLeft(col int) *MatrixPrinter {
+func (t *Table) ColLeft(col int) *Table {
 
-	for col > len(out.colaligns) {
-		out.colaligns = append(out.colaligns, 1)
+	for col > len(t.colaligns) {
+		t.colaligns = append(t.colaligns, 1)
 	}
 
-	if col == len(out.colaligns) {
-		out.colaligns = append(out.colaligns, -1)
+	if col == len(t.colaligns) {
+		t.colaligns = append(t.colaligns, -1)
 	} else {
-		out.colaligns[col] = -1
+		t.colaligns[col] = -1
 	}
-	return out
+	return t
 }
 
 // EndRow completes the current row and starts a new one
-func (out *MatrixPrinter) EndRow() *MatrixPrinter {
-	out.buf = append(out.buf, out.line)
-	out.col = 0
-	out.line = make([]string, len(out.colwidths))
-	return out
+func (t *Table) EndRow() *Table {
+	t.buf = append(t.buf, t.line)
+	t.col = 0
+	t.line = make([]string, len(t.colwidths))
+	return t
 }
 
 // Print writes out the contents of the matrix using the supplied Writer
-func (out *MatrixPrinter) Print(w io.Writer) {
+func (t *Table) Print(w io.Writer) {
 
-	for i := 0; i < len(out.buf); i++ {
-		line := out.buf[i]
-		out.printRow(w, line)
+	for i := 0; i < len(t.buf); i++ {
+		line := t.buf[i]
+		t.printRow(w, line)
 		io.WriteString(w, "\n")
 	}
-	out.printRow(w, out.line)
+	t.printRow(w, t.line)
 	io.WriteString(w, "\n") //Do we want a newline here?
 }
 
-func (out *MatrixPrinter) printRow(w io.Writer, line []string) {
+func (out *Table) printRow(w io.Writer, line []string) {
 
 	first := false
 	for j := 0; j < len(line); j++ {
@@ -112,7 +112,7 @@ func (out *MatrixPrinter) printRow(w io.Writer, line []string) {
 
 // TODO: port the java impl...
 /*
-func (out *MatrixPrinter) sortBy(final int col, final int fromRow) {
+func (out *Table) sortBy(final int col, final int fromRow) {
 
     	List<List<String>> subBuf = buf.subList(fromRow, buf.size());
     	buf = buf.subList(0, fromRow);
