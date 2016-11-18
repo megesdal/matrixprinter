@@ -30,7 +30,7 @@ func NewTable() *Table {
 }
 
 // AppendInt adds an int to the next column
-func (t *Table) AppendInt(i int) *Table {
+func (t *Table) AppendInt(i int64) *Table {
 	return t.Append(fmt.Sprintf("%d", i))
 }
 
@@ -79,6 +79,22 @@ func (t *Table) EndRow() *Table {
 	t.col = 0
 	t.line = make([]string, len(t.colwidths))
 	return t
+}
+
+func (t *Table) Transpose() *Table {
+
+	if t.col != 0 {
+		t.EndRow()
+	}
+
+	tT := NewTable()
+	for j := 0; j < t.ncols; j++ {
+		for i := 0; i < len(t.buf); i++ {
+			tT.Append(t.buf[i][j])
+		}
+		tT.EndRow()
+	}
+	return tT
 }
 
 // Print writes out the contents of the matrix using the supplied Writer
